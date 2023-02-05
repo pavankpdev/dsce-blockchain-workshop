@@ -4,27 +4,34 @@ pragma solidity ^0.8.0;
 contract Bank {
     mapping(address => uint) private balances;
     uint256 private totalFunds;
-    address private owner;
+    address public owner;
 
-    modifier onlyOwner (address caller) {
-        require(caller == owner, "Error: caller is not an owner!");
+    modifier onlyOwner () {
+        require(owner == msg.sender, "Error: caller is not an owner!");
+        _;
     }
 
-    function deposit() public payable {
+    constructor() {
+        owner = msg.sender;
+    }
+
+    function deposit() external payable {
         balances[msg.sender] += msg.value;
+        totalFunds += msg.value;
     }
 
-    function withdraw(uint amount) public {
+    function withdraw(uint amount) external {
         require(balances[msg.sender] >= amount, "Insufficient funds");
         balances[msg.sender] -= amount;
+        totalFunds -= amount;
         payable(msg.sender).transfer(amount);
     }
 
-    function getBalance() public view returns (uint) {
+    function getBalance() external view returns (uint) {
         return balances[msg.sender];
     }
 
-    function getTotalFundsInTheBank() returns (uint256) {
+    function getTotalFundsInTheBank() external view onlyOwner returns (uint256) {
         return totalFunds;
     }
 }
